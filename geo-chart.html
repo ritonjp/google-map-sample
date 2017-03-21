@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['bar']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        /*var data = google.visualization.arrayToDataTable([
+          ['Restaurent', 'Sales', 'Number of Customers'],
+          ['Marugotohokkaidou', 10000, 1000],
+          ['Sushi no Isomatsu', 20000, 2000],
+          ['Living:bar', 30000, 3000],
+          ['Osakakitchen', 40000, 4000],
+          ['ESPRIT TOKYO', 10000, 1000],
+          ['JUMANJI 55', 20000, 2000],
+          ['MIST', 30000, 3000],
+          ['DiA TOKYO', 40000, 4000],
+          ['V2TOKYO', 10000, 1000],
+          ['CUBE', 20000, 2000]
+        ]);*/
+        var chartdata = new google.visualization.DataTable();
+            chartdata.addColumn('string', 'Month');
+            chartdata.addColumn('number', 'Sales');
+            chartdata.addColumn('number', 'Number of Customers');
+
+
+        downloadUrl('http://localhost/google-map-api-project/mapmarkers.php', function(data) {
+            var xml = data.responseXML;
+
+            var markers = xml.documentElement.getElementsByTagName('marker');
+            Array.prototype.forEach.call(markers, function(markerElem) {
+              var shop_code = markerElem.getAttribute('shop_code');
+              var name = markerElem.getAttribute('name');
+              var address = markerElem.getAttribute('address');
+              var type = markerElem.getAttribute('type');
+              var food_speciality = markerElem.getAttribute('food_speciality');
+              var total_customer_visited = parseInt(markerElem.getAttribute('total_customer_visited'));
+              var daily_sales = parseInt(markerElem.getAttribute('daily_sales'));
+
+              chartdata.addRow([name, daily_sales, total_customer_visited]);
+
+            }); //end for loop
+        }); //end downloadURL
+        //console.log(chartdata);
+        var options = {
+          chart: {
+            title: 'Restaurent Wise Sales Performance',
+            subtitle: 'Sales and Number of Customers: 2017-2018',
+          },
+          bars: 'horizontal' // Required for Material Bar Charts.
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+        chart.draw(chartdata, options);
+      }
+
+      function downloadUrl(url, callback) {
+        var request = window.ActiveXObject ?
+            new ActiveXObject('Microsoft.XMLHTTP') :
+            new XMLHttpRequest;
+
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            request.onreadystatechange = doNothing;
+            callback(request, request.status);
+          }
+        };
+
+        request.open('GET', url, true);
+        request.send(null);
+      }
+
+      function doNothing() {}
+    </script>
+  </head>
+  <body>
+    <div id="barchart_material" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>
